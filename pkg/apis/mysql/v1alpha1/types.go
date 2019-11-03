@@ -64,6 +64,8 @@ type ClusterSpec struct {
 	// and server key for group replication SSL.
 	// +optional
 	SSLSecret *corev1.LocalObjectReference `json:"sslSecret,omitempty"`
+	// Init containers
+	InitContainers []corev1.Container `json:"initContainers,omitempty"`
 }
 
 // ClusterConditionType represents a valid condition of a Cluster.

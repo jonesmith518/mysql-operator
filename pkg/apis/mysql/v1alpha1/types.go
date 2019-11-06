@@ -21,7 +21,7 @@ import (
 
 // MinimumMySQLVersion is the minimum version of MySQL server supported by the
 // MySQL Operator.
-const MinimumMySQLVersion = "8.0.11"
+const MinimumMySQLVersion = "5.7.0"
 
 // ClusterSpec defines the attributes a user can specify when creating a cluster
 type ClusterSpec struct {

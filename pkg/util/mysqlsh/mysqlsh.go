@@ -119,6 +119,8 @@ func (r *runner) GetClusterStatus(ctx context.Context) (*innodb.ClusterStatus, e
 		return nil, err
 	}
 
+	beginIndex := bytes.Index(output, []byte("{"))
+	output = output[beginIndex:]
 	status := &innodb.ClusterStatus{}
 	err = json.Unmarshal(sanitizeJSON(output), status)
 	if err != nil {

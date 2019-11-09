@@ -89,7 +89,28 @@ func (r *runner) CreateCluster(ctx context.Context, opts Options) (*innodb.Clust
 	python := fmt.Sprintf("print dba.create_cluster('%s', %s).status()", innodb.DefaultClusterName, opts)
 	output, err := r.run(ctx, python)
 	if err != nil {
-		return nil, err
+		// todo experimental : try adopting cluster
+		if strings.Contains(err.Error(), "Creating a cluster on an unmanaged replication group requires adoptFromGR option to be true") {
+			glog.V(2).Infof("[CreateCluster] debug: adding adoptFromGR option and retrying...")
+			opts["adoptFromGR"] = "True"
+			// Dba.create_cluster: Cannot use memberSslMode option if adoptFromGR is set to true.
+			if _,ok := opts["memberSslMode"];ok{
+				delete(opts,"memberSslMode")
+			}
+			//  Dba.create_cluster: Cannot use multiMaster option if adoptFromGR is set to true. Using adoptFromGR mode will adopt the primary mode in use by the Cluster
+			if _,ok := opts["multiMaster"];ok{
+				delete(opts,"multiMaster")
+			}
+			// ArgumentError: If adoptFromGR is true and the multiPrimary option is used.
+			if _,ok := opts["multiPrimary"];ok{
+				delete(opts,"multiPrimary")
+			}
+			python = fmt.Sprintf("print dba.create_cluster('%s', %s).status()", innodb.DefaultClusterName, opts)
+			output, err = r.run(ctx, python)
+		}
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Skip non-json spat out on stdout.

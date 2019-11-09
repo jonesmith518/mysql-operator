@@ -35,7 +35,7 @@ import (
 
 var errNoClusterFound = errors.New("no cluster found on any of the seed nodes")
 
-const defaultTimeout = 10 * time.Second
+const defaultTimeout = 120 * time.Second //todo increased to avoid signal kill error
 
 // isDatabaseRunning returns true if a connection can be made to the MySQL
 // database running in the pod instance in which this function is called.

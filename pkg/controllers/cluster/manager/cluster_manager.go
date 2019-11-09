@@ -294,6 +294,10 @@ func (m *ClusterManager) handleInstanceNotFound(ctx context.Context, primaryAddr
 		"memberSslMode": "DISABLED",
 		"ipWhitelist":   whitelistCIDR,
 	}); err != nil {
+		if strings.Contains(err.Error(), "already part of this InnoDB cluster") {
+			glog.Infof("[handleInstanceNotFound] instance already in cluster: %s", m.Instance.GetShellURI())
+			return true
+		}
 		glog.Errorf("Failed to add to cluster: %v", err)
 		return false
 	}

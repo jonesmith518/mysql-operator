@@ -167,7 +167,8 @@ func (r *runner) RemoveInstanceFromCluster(ctx context.Context, uri string, opts
 // stripPasswordWarning strips the password warning output by mysqlsh due to the
 // fact we pass the password as part of the connection URI.
 func (r *runner) stripPasswordWarning(in []byte) []byte {
-	warning := []byte("mysqlx: [Warning] Using a password on the command line interface can be insecure.\n")
+	//todo for mysql 5.7.x + mysql agent 8.0.12: mysqlsh, but why mysqlx ??
+	warning := []byte("mysqlsh: [Warning] Using a password on the command line interface can be insecure.\n")
 	return bytes.Replace(in, warning, []byte(""), 1)
 }
 

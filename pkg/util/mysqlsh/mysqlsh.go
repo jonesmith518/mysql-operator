@@ -82,6 +82,9 @@ type runner struct {
 func (r *runner) IsClustered(ctx context.Context) bool {
 	python := fmt.Sprintf("dba.get_cluster('%s')", innodb.DefaultClusterName)
 	_, err := r.run(ctx, python)
+	if err != nil {
+		glog.V(6).Infof("[IsClustered] python:%s, error:%s",python, err.Error())
+	}
 	return err == nil
 }
 

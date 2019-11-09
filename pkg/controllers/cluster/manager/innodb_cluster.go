@@ -17,6 +17,7 @@ package manager
 import (
 	"context"
 	"errors"
+	"github.com/golang/glog"
 	"os"
 	"strings"
 	"time"
@@ -100,9 +101,13 @@ func getClusterStatusFromGroupSeeds(ctx context.Context, kubeclient kubernetes.I
 		if err != nil {
 			return nil, err
 		}
+		if !podExists(kubeclient, inst) {
+			glog.V(6).Infof("[getClusterStatusFromGroupSeeds] pod not exists for seed:%s",replicationGroupSeed)
+		}
 		if i == 0 || podExists(kubeclient, inst) {
 			msh := mysqlsh.New(utilexec.New(), inst.GetShellURI())
 			if !msh.IsClustered(ctx) {
+				glog.V(6).Infof("[getClusterStatusFromGroupSeeds] seed not clustered:%s,shellURI:%s",replicationGroupSeed, inst.GetShellURI())
 				continue
 			}
 			return msh.GetClusterStatus(ctx)

@@ -163,7 +163,7 @@ func mysqlServerContainer(cluster *v1alpha1.Cluster, mysqlServerImage string, ro
 		"--datadir=/var/lib/mysql",
 		"--user=mysql",
 		"--gtid_mode=ON",
-		"--log-bin",
+		"--log-bin=mysql-bin",
 		"--binlog_checksum=NONE",
 		"--enforce_gtid_consistency=ON",
 		"--log-slave-updates=ON",
@@ -171,7 +171,7 @@ func mysqlServerContainer(cluster *v1alpha1.Cluster, mysqlServerImage string, ro
 		"--master-info-repository=TABLE",
 		"--relay-log-info-repository=TABLE",
 		"--transaction-write-set-extraction=XXHASH64",
-		fmt.Sprintf("--relay-log=%s-${index}-relay-bin", cluster.Name),
+		"--relay-log=mysql-relay",
 		fmt.Sprintf("--report-host=\"%[1]s-${index}.%[1]s\"", cluster.Name),
 		"--log-error-verbosity=3",
 	}

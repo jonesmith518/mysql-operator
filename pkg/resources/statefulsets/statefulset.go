@@ -46,7 +46,7 @@ const (
 	mySQLVolumeName       = "mysqlvolume"
 	mySQLSSLVolumeName    = "mysqlsslvolume"
 
-	replicationGroupPort = 13306
+	replicationGroupPort = 33061 // use default for GCS, eg. seeds in agent ENV
 )
 
 func volumeMounts(cluster *v1alpha1.Cluster) []v1.VolumeMount {

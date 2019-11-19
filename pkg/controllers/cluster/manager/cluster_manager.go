@@ -255,7 +255,17 @@ func (m *ClusterManager) handleInstanceMissing(ctx context.Context, primaryAddr 
 	instanceState, err := primarySh.CheckInstanceState(ctx, m.Instance.GetShellURI())
 	if err != nil {
 		glog.Errorf("Failed to determine if we can rejoin the cluster: %v", err)
-		return false
+		if strings.Contains(err.Error(), "metadata exists, but GR is not active") {
+			glog.Info("[handleInstanceMissing] GR not active, starting...")
+			msh := m.mysqlshFactory(m.Instance.GetShellURI())
+			err = msh.StartGroupReplication(ctx)
+			if err != nil {
+				glog.Errorf("[handleInstanceMissing] Failed to start GR: %v", err)
+				return false
+			}
+		} else {
+			return false
+		}
 	}
 	glog.V(4).Infof("Checking if instance can rejoin cluster")
 	if instanceState.CanRejoinCluster() {

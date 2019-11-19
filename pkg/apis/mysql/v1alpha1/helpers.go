@@ -22,6 +22,7 @@ import (
 const (
 	// The default MySQL version to use if not specified explicitly by user
 	defaultVersion      = "8.0.12"
+	defaultPodManagementPolicy = "OrderedReady"
 	defaultMembers      = 3
 	defaultBaseServerID = 1000
 	// maxBaseServerID is the maximum safe value for BaseServerID calculated
@@ -55,6 +56,10 @@ func getOperatorVersionLabel(labelMap map[string]string) string {
 // For example a user can choose to omit the version
 // and number of members.
 func (c *Cluster) EnsureDefaults() *Cluster {
+	if c.Spec.PodManagementPolicy == "" {
+		c.Spec.PodManagementPolicy = defaultPodManagementPolicy
+	}
+
 	if c.Spec.Members == 0 {
 		c.Spec.Members = defaultMembers
 	}

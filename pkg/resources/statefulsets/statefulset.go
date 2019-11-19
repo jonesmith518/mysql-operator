@@ -358,6 +358,7 @@ func NewForCluster(cluster *v1alpha1.Cluster, images operatoropts.Images, servic
 			},
 		},
 		Spec: apps.StatefulSetSpec{
+			PodManagementPolicy: cluster.Spec.PodManagementPolicy,
 			Replicas: &cluster.Spec.Members,
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{

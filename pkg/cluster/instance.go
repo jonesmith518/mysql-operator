@@ -117,6 +117,10 @@ func (i *Instance) GetShellURI() string {
 	return fmt.Sprintf("%s:%s@%s:%d", i.GetUser(), i.GetPassword(), i.Name(), i.Port)
 }
 
+func (i *Instance) GetShellURIByNamePort(namePort string) string {
+	return fmt.Sprintf("%s:%s@%s", i.GetUser(), i.GetPassword(), namePort)
+}
+
 // Name returns the name of the instance.
 func (i *Instance) Name() string {
 	return fmt.Sprintf("%s.%s", i.PodName(), i.ParentName)

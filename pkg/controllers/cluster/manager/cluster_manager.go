@@ -362,7 +362,16 @@ func (m *ClusterManager) rebootFromOutage(ctx context.Context) (*innodb.ClusterS
 
 	msh := m.mysqlshFactory(m.Instance.GetShellURI())
 	if err := msh.RebootClusterFromCompleteOutage(ctx); err != nil {
-		return nil, errors.Wrap(err, "rebooting cluster from complete outage")
+		if strings.Contains(err.Error(), "The active session instance isn't the most updated in comparison with the ONLINE instances of the Cluster's metadata. Please use the most up to date instance") {
+            mostUpdatedInstanceNamePort := strings.Split(strings.Split(err.Error(), ": '")[1], "'")[0]
+			msh = m.mysqlshFactory(m.Instance.GetShellURIByNamePort(mostUpdatedInstanceNamePort))
+			glog.Infof("[rebootFromOutage] most up to date instance=%s detected, retrying...", mostUpdatedInstanceNamePort)
+			if err := msh.RebootClusterFromCompleteOutage(ctx); err != nil {
+				return nil, errors.Wrap(err, "[rebootFromOutage] retry from most updated instance")
+			}
+		} else {
+			return nil, errors.Wrap(err, "rebooting cluster from complete outage")
+		}
 	}
 
 	status, err := msh.GetClusterStatus(ctx)

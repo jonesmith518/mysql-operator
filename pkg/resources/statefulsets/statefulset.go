@@ -174,6 +174,13 @@ func mysqlServerContainer(cluster *v1alpha1.Cluster, mysqlServerImage string, ro
 		"--relay-log=mysql-relay",
 		fmt.Sprintf("--report-host=\"%[1]s-${index}.%[1]s\"", cluster.Name),
 		"--log-error-verbosity=3",
+		fmt.Sprintf("--loose-group-replication-local-address=\"%[1]s-${index}.%[1]s:%[2]d\"", cluster.Name, replicationGroupPort),
+		"--loose-group-replication-group-seeds=\"${seeds}\"",
+		fmt.Sprintf("--group-replication-group-name=\"%[1]s\"", constants.ReplicationGroupName),
+		"--loose-group-replication-start-on-boot=\"ON\"",
+		"--group-replication-bootstrap-group=\"OFF\"",
+		"--group-replication-exit-state-action=\"READ_ONLY\"",
+		"--group-replication-ip-whitelist=\"0.0.0.0/0\"",
 	}
 
 	if cluster.RequiresCustomSSLSetup() {
@@ -192,7 +199,25 @@ func mysqlServerContainer(cluster *v1alpha1.Cluster, mysqlServerImage string, ro
          # Finds the replica index from the hostname, and uses this to define
          # a unique server id for this instance.
          index=$(cat /etc/hostname | grep -o '[^-]*$')
-         /entrypoint.sh %s`, baseServerID, entryPointArgs)
+
+         # set seeds to other nodes
+         members=%d
+         cluster_name=%s
+         repl_group_port=%d
+         max_index=$(expr $members - 1)
+         seeds=""
+         for i in $(seq 0 $max_index)
+         do
+           if [ $i -eq $index ]; then
+             continue;
+           fi
+           if [ -z $seeds ]; then
+             seeds=${cluster_name}-${i}.${cluster_name}:${repl_group_port}
+           else
+             seeds=${seeds},${cluster_name}-${i}.${cluster_name}:${repl_group_port}
+           fi
+         done         
+         /entrypoint.sh %s`, baseServerID, members, cluster.Name, replicationGroupPort, entryPointArgs)
 	return v1.Container{
 		Name: MySQLServerName,
 		// TODO(apryde): Add BaseImage to cluster CRD.

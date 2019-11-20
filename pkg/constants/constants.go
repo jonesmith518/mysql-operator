@@ -29,3 +29,9 @@ const ClusterRolePrimary = "primary"
 
 // ClusterRoleSecondary denotes a secondary InnoDB cluster member.
 const ClusterRoleSecondary = "secondary"
+
+// used by other containers, eg. init container
+const ReplicasLabel  = "mysql.cluster/replicas"
+
+//
+const ReplicationGroupName = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"

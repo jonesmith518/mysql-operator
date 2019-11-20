@@ -17,6 +17,7 @@ package manager
 import (
 	"context"
 	"fmt"
+	"github.com/oracle/mysql-operator/pkg/constants"
 	"strings"
 	"time"
 
@@ -343,6 +344,7 @@ func (m *ClusterManager) createCluster(ctx context.Context) (*innodb.ClusterStat
 	opts := mysqlsh.Options{
 		"memberSslMode": "DISABLED",
 		"ipWhitelist":   whitelistCIDR,
+		"groupName": constants.ReplicationGroupName,
 	}
 	if m.Instance.MultiMaster {
 		opts["force"] = "True"

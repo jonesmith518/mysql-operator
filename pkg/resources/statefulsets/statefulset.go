@@ -361,6 +361,7 @@ func NewForCluster(cluster *v1alpha1.Cluster, images operatoropts.Images, servic
 
 	podLabels := map[string]string{
 		constants.ClusterLabel: cluster.Name,
+		constants.ReplicasLabel: strconv.Itoa(members),
 	}
 	if cluster.Spec.MultiMaster {
 		podLabels[constants.LabelClusterRole] = constants.ClusterRolePrimary

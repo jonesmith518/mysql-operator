@@ -254,7 +254,7 @@ func mysqlAgentContainer(cluster *v1alpha1.Cluster, mysqlAgentImage string, root
 	return v1.Container{
 		Name:         MySQLAgentName,
 		Image:        fmt.Sprintf("%s:%s", mysqlAgentImage, agentVersion),
-		Args:         []string{"--v=4"},
+		Args:         []string{fmt.Sprintf("--v=%d", cluster.Spec.LogLevel)},
 		VolumeMounts: volumeMounts(cluster),
 		Env: []v1.EnvVar{
 			clusterNameEnvVar(cluster),

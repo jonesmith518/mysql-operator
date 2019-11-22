@@ -32,6 +32,8 @@ type ClusterSpec struct {
 	PodManagementPolicy v1beta1.PodManagementPolicyType `json:"podManagementPolicy,omitempty"`
 	// Members defines the number of MySQL instances in a cluster
 	Members int32 `json:"members,omitempty"`
+	//
+	LogLevel int32 `json:"logLevel,omitempty"`
 	// BaseServerID defines the base number used to create unique server_id
 	// for MySQL instances in the cluster. Valid range 1 to 4294967286.
 	// If omitted in the manifest file (or set to 0) defaultBaseServerID

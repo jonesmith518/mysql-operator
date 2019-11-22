@@ -64,6 +64,10 @@ func (c *Cluster) EnsureDefaults() *Cluster {
 		c.Spec.Members = defaultMembers
 	}
 
+	if c.Spec.LogLevel == 0 {
+		c.Spec.LogLevel = constants.DefaultLogLevel
+	}
+
 	if c.Spec.BaseServerID == 0 {
 		c.Spec.BaseServerID = defaultBaseServerID
 	}

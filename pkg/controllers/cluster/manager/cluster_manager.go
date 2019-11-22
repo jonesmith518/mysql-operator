@@ -95,7 +95,7 @@ func NewLocalClusterManger(kubeclient kubernetes.Interface, kubeInformerFactory 
 }
 
 func (m *ClusterManager) getClusterStatus(ctx context.Context) (*innodb.ClusterStatus, error) {
-	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
 	defer cancel()
 	clusterStatus, localMSHErr := m.localMySh.GetClusterStatus(ctx)
 	if localMSHErr != nil {

@@ -35,3 +35,8 @@ const ReplicasLabel  = "mysql.cluster/replicas"
 
 //
 const ReplicationGroupName = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+
+// global log level
+const LogLevel = 4
+
+const DefaultTimeout = 120 * time.Second //todo increased to avoid signal kill error

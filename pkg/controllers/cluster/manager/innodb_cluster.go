@@ -18,9 +18,9 @@ import (
 	"context"
 	"errors"
 	"github.com/golang/glog"
+	"github.com/oracle/mysql-operator/pkg/constants"
 	"os"
 	"strings"
-	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,12 +36,11 @@ import (
 
 var errNoClusterFound = errors.New("no cluster found on any of the seed nodes")
 
-const defaultTimeout = 120 * time.Second //todo increased to avoid signal kill error
 
 // isDatabaseRunning returns true if a connection can be made to the MySQL
 // database running in the pod instance in which this function is called.
 func isDatabaseRunning(ctx context.Context) bool {
-	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
 	defer cancel()
 	err := utilexec.New().CommandContext(ctx,
 		"mysqladmin",

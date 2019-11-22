@@ -14,6 +14,8 @@
 
 package constants
 
+import "time"
+
 // ClusterLabel is applied to all components of a MySQL cluster
 const ClusterLabel = "v1alpha1.mysql.oracle.com/cluster"
 

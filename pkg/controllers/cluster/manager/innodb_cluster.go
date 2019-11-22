@@ -44,6 +44,7 @@ func isDatabaseRunning(ctx context.Context) bool {
 	defer cancel()
 	err := utilexec.New().CommandContext(ctx,
 		"mysqladmin",
+		"--connect-timeout", "10",
 		"--protocol", "tcp",
 		"-u", "root",
 		os.ExpandEnv("-p$MYSQL_ROOT_PASSWORD"),

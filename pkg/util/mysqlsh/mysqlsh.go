@@ -19,7 +19,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/oracle/mysql-operator/pkg/constants"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -205,7 +207,10 @@ func (r *runner) run(ctx context.Context, python string) ([]byte, error) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 
-	args := []string{"--no-wizard", "--uri", r.uri, "--py", "-e", python}
+	args := []string{
+		"--no-wizard",
+		"--connect-timeout", strconv.FormatInt(constants.DefaultTimeout.Milliseconds(), 10),
+		"--uri", r.uri, "--py", "-e", python}
 
 	cmd := r.exec.CommandContext(ctx, "mysqlsh", args...)
 

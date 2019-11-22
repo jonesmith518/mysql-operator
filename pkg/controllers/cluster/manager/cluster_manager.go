@@ -99,7 +99,7 @@ func (m *ClusterManager) getClusterStatus(ctx context.Context) (*innodb.ClusterS
 	defer cancel()
 	clusterStatus, localMSHErr := m.localMySh.GetClusterStatus(ctx)
 	if localMSHErr != nil {
-		glog.V(6).Infof("[getClusterStatus] localMySh.GetClusterStatus err: %q", localMSHErr)
+		glog.V(6).Infof("[getClusterStatus] localMySh.GetClusterStatus err: %v", localMSHErr)
 		var err error
 		clusterStatus, err = getClusterStatusFromGroupSeeds(ctx, m.kubeClient, m.Instance)
 		if err != nil {
@@ -109,7 +109,7 @@ func (m *ClusterManager) getClusterStatus(ctx context.Context) (*innodb.ClusterS
 			return nil, errors.Wrap(localMSHErr, "getting cluster status from group seeds")
 		}
 	}
-	glog.V(6).Infof("[getClusterStatus] ok: clusterStatus: %q", clusterStatus)
+	glog.V(6).Infof("[getClusterStatus] ok: clusterStatus: %v", clusterStatus)
 	return clusterStatus, nil
 }
 
@@ -143,7 +143,7 @@ func (m *ClusterManager) Sync(ctx context.Context) bool {
 			metrics.IncEventCounter(clusterCreateCount)
 		} else {
 			glog.V(2).Info("Cluster not yet present. Waiting...")
-			glog.V(6).Info("[Sync] myshErr: %q", myshErr)
+			glog.V(6).Info("[Sync] myshErr: %v", myshErr)
 			return false
 		}
 	}

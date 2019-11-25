@@ -226,6 +226,8 @@ func (r *runner) run(ctx context.Context, python string) ([]byte, error) {
 		underlying := NewErrorFromStderr(stderr.String())
 		if underlying != nil {
 			return nil, errors.WithStack(underlying)
+		} else {
+			return nil, err
 		}
 	}
 

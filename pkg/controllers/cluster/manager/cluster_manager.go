@@ -381,7 +381,17 @@ func (m *ClusterManager) rebootFromOutage(ctx context.Context) (*innodb.ClusterS
 			if err := msh.RebootClusterFromCompleteOutage(ctx); err != nil {
 				return nil, errors.Wrap(err, "[rebootFromOutage] retry from most updated instance")
 			}
-		} else {
+		} else if strings.Contains(err.Error(), "belongs to an InnoDB Cluster and is reachable") {
+            glog.Info("[rebootFromOutage] error: remote instance reachable")
+			glog.Info("shutdown myself")
+            msh.ShutdownInstance(ctx)
+            remoteInstanceNamePort := strings.Split(strings.Split(err.Error(), "instance '")[1], "' belongs")[0]
+			glog.Infof("shutdown remote instance %s", remoteInstanceNamePort)
+			msh = m.mysqlshFactory(m.Instance.GetShellURIByNamePort(remoteInstanceNamePort))
+			msh.ShutdownInstance(ctx)
+			glog.Info("//todo: sleep 120s for remote instance database running")
+			time.Sleep(120 * time.Second)
+		}else {
 			return nil, errors.Wrap(err, "rebooting cluster from complete outage")
 		}
 	}

@@ -20,6 +20,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/oracle/mysql-operator/pkg/constants"
+	"k8s.io/api/apps/v1beta1"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -245,10 +247,20 @@ func (r *runner) RebootClusterFromCompleteOutage(ctx context.Context) error {
 	// connectivity point of view, they still must resolve to a valid
 	// IP address, which is not the case considering the StatefulSet
 	// behavior.
-	python := fmt.Sprintf("session.query('SET GLOBAL group_replication_group_seeds = \"\"')")
-	_, err := r.run(ctx, python)
-	if err != nil {
-		return err
+	podManagementPolicy := os.Getenv("POD_MANAGEMENT_POLICY")
+	glog.V(6).Infof("podManagementPolicy: %s", podManagementPolicy)
+	if podManagementPolicy == v1beta1.ParallelPodManagement {
+        // group seeds is needed when detecting the most latest transaction node
+        glog.V(6).Info("group seeds unchanged...")
+	} else if podManagementPolicy == string(v1beta1.OrderedReadyPodManagement){
+		glog.V(6).Info("setting group seeds to empty...")
+		python := fmt.Sprintf("session.query('SET GLOBAL group_replication_group_seeds = \"\"')")
+		_, err := r.run(ctx, python)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New(fmt.Sprintf("podManagementPolicy invalid: %s", podManagementPolicy))
 	}
 
 	python = fmt.Sprintf("dba.reboot_cluster_from_complete_outage('%s')", innodb.DefaultClusterName)

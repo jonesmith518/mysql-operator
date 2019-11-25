@@ -273,6 +273,10 @@ func mysqlAgentContainer(cluster *v1alpha1.Cluster, mysqlAgentImage string, root
 			namespaceEnvVar(),
 			replicationGroupSeedsEnvVar(replicationGroupSeeds),
 			multiMasterEnvVar(cluster.Spec.MultiMaster),
+			{
+				Name:  "POD_MANAGEMENT_POLICY",
+				Value: string(cluster.Spec.PodManagementPolicy),
+			},
 			rootPassword,
 			{
 				Name: "MY_POD_IP",

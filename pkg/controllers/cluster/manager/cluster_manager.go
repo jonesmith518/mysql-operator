@@ -125,6 +125,20 @@ func (m *ClusterManager) Sync(ctx context.Context) bool {
 	// most common case.
 	clusterStatus, err := m.getClusterStatus(ctx)
 	if err != nil {
+		glog.Errorf("Failed to get the cluster status: %v", err)
+		if strings.Contains(err.Error(), "Target member is in state RECOVERING") {
+			glog.Error("[Sync] Target member recovering, waiting...")
+			return false
+		}
+		if strings.Contains(err.Error(), "Target member is in state ERROR") {
+			//todo do not know which member is in ERROR state , assume myself
+			glog.Error("[Sync] Target member error, shutting down myself...")
+			err = m.localMySh.ShutdownInstance(ctx)
+			if err != nil {
+				glog.Errorf("[Sync] Failed to shutdown %s", m.Instance.GetShellURI())
+			}
+			return false
+		}
 		myshErr, ok := errors.Cause(err).(*mysqlsh.Error)
 		if !ok {
 			glog.Errorf("Failed to get the cluster status: %+v", err)

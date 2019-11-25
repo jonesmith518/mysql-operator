@@ -116,7 +116,7 @@ func (m *ClusterManager) getClusterStatus(ctx context.Context) (*innodb.ClusterS
 // Sync ensures that the MySQL database instance managed by this instance of the
 // agent is part of the InnoDB cluster and is online.
 func (m *ClusterManager) Sync(ctx context.Context) bool {
-	if !isDatabaseRunning(ctx) {
+	if !isDatabaseRunning(ctx, "") {
 		glog.V(2).Infof("Database not yet running. Waiting...")
 		return false
 	}

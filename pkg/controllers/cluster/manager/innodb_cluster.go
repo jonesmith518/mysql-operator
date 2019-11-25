@@ -39,13 +39,18 @@ var errNoClusterFound = errors.New("no cluster found on any of the seed nodes")
 
 // isDatabaseRunning returns true if a connection can be made to the MySQL
 // database running in the pod instance in which this function is called.
-func isDatabaseRunning(ctx context.Context) bool {
+// if host is "", then localhost is used
+func isDatabaseRunning(ctx context.Context, host string) bool {
 	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
 	defer cancel()
+	if host=="" {
+		host = "localhost"
+	}
 	err := utilexec.New().CommandContext(ctx,
 		"mysqladmin",
 		"--connect-timeout", "10",
 		"--protocol", "tcp",
+		"--host", host,
 		"-u", "root",
 		os.ExpandEnv("-p$MYSQL_ROOT_PASSWORD"),
 		"status",
@@ -96,15 +101,20 @@ func getClusterStatusFromGroupSeeds(ctx context.Context, kubeclient kubernetes.I
 		return nil, err
 	}
 
-	for i, replicationGroupSeed := range replicationGroupSeeds {
+	for _, replicationGroupSeed := range replicationGroupSeeds {
 		inst, err := cluster.NewInstanceFromGroupSeed(replicationGroupSeed)
 		if err != nil {
 			return nil, err
 		}
+		//if any seed failed to connect, return error
 		if !podExists(kubeclient, inst) {
 			glog.V(6).Infof("[getClusterStatusFromGroupSeeds] pod not exists for seed:%s",replicationGroupSeed)
-		}
-		if i == 0 || podExists(kubeclient, inst) {
+			return nil, errors.New("pod not exists for seed")
+		} else {
+			if !isDatabaseRunning(ctx, inst.Name()) {
+				glog.V(2).Infof("Database %s not running. Waiting...", inst.Name())
+				return nil, errors.New("db not running")
+			}
 			msh := mysqlsh.New(utilexec.New(), inst.GetShellURI())
 			if !msh.IsClustered(ctx) {
 				glog.V(6).Infof("[getClusterStatusFromGroupSeeds] seed not clustered:%s,shellURI:%s",replicationGroupSeed, inst.GetShellURI())

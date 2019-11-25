@@ -177,10 +177,20 @@ func mysqlServerContainer(cluster *v1alpha1.Cluster, mysqlServerImage string, ro
 		fmt.Sprintf("--loose-group-replication-local-address=\"%[1]s-${index}.%[1]s:%[2]d\"", cluster.Name, replicationGroupPort),
 		"--loose-group-replication-group-seeds=\"${seeds}\"",
 		fmt.Sprintf("--group-replication-group-name=\"%[1]s\"", constants.ReplicationGroupName),
-		"--loose-group-replication-start-on-boot=\"ON\"",
-		"--group-replication-bootstrap-group=\"OFF\"",
-		"--group-replication-exit-state-action=\"READ_ONLY\"",
-		"--group-replication-ip-whitelist=\"0.0.0.0/0\"",
+		"--loose-group-replication-start-on-boot=\"OFF\"",
+		"--loose-group-replication-bootstrap-group=\"OFF\"",
+		"--loose-group-replication-exit-state-action=\"READ_ONLY\"",
+		"--loose-group-replication-ip-whitelist=\"0.0.0.0/0\"",
+	}
+
+	if cluster.Spec.MultiMaster {
+		args = append(args,
+			"--loose-group-replication-single-primary-mode=\"OFF\"",
+			"--loose-group-replication-enforce-update-everywhere-checks=\"ON\"")
+	} else {
+		args = append(args,
+			"--loose-group-replication-single-primary-mode=\"ON\"",
+			"--loose-group-replication-enforce-update-everywhere-checks=\"OFF\"")
 	}
 
 	if cluster.RequiresCustomSSLSetup() {

@@ -222,6 +222,7 @@ func mysqlServerContainer(cluster *v1alpha1.Cluster, mysqlServerImage string, ro
 		Name: MySQLServerName,
 		// TODO(apryde): Add BaseImage to cluster CRD.
 		Image: fmt.Sprintf("%s:%s", mysqlServerImage, cluster.Spec.Version),
+		ImagePullPolicy: cluster.Spec.ImagePullPolicy,
 		Ports: []v1.ContainerPort{
 			{
 				ContainerPort: 3306,
@@ -254,6 +255,7 @@ func mysqlAgentContainer(cluster *v1alpha1.Cluster, mysqlAgentImage string, root
 	return v1.Container{
 		Name:         MySQLAgentName,
 		Image:        fmt.Sprintf("%s:%s", mysqlAgentImage, agentVersion),
+		ImagePullPolicy: cluster.Spec.ImagePullPolicy,
 		Args:         []string{fmt.Sprintf("--v=%d", cluster.Spec.LogLevel)},
 		VolumeMounts: volumeMounts(cluster),
 		Env: []v1.EnvVar{

@@ -34,6 +34,7 @@ type ClusterSpec struct {
 	Members int32 `json:"members,omitempty"`
 	//
 	LogLevel int32 `json:"logLevel,omitempty"`
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 	// BaseServerID defines the base number used to create unique server_id
 	// for MySQL instances in the cluster. Valid range 1 to 4294967286.
 	// If omitted in the manifest file (or set to 0) defaultBaseServerID

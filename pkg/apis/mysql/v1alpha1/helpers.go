@@ -68,6 +68,10 @@ func (c *Cluster) EnsureDefaults() *Cluster {
 		c.Spec.LogLevel = constants.DefaultLogLevel
 	}
 
+	if c.Spec.ImagePullPolicy == "" {
+		c.Spec.ImagePullPolicy = constants.DefaultImagePullPolicy
+	}
+
 	if c.Spec.BaseServerID == 0 {
 		c.Spec.BaseServerID = defaultBaseServerID
 	}

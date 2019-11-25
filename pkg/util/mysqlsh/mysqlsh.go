@@ -263,8 +263,8 @@ func (r *runner) RebootClusterFromCompleteOutage(ctx context.Context) error {
 		return errors.New(fmt.Sprintf("podManagementPolicy invalid: %s", podManagementPolicy))
 	}
 
-	python = fmt.Sprintf("dba.reboot_cluster_from_complete_outage('%s')", innodb.DefaultClusterName)
-	_, err = r.run(ctx, python)
+	python := fmt.Sprintf("dba.reboot_cluster_from_complete_outage('%s')", innodb.DefaultClusterName)
+	_, err := r.run(ctx, python)
 	return err
 }
 

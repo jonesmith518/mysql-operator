@@ -154,7 +154,19 @@ func (m *ClusterManager) Sync(ctx context.Context) bool {
 
 	if clusterStatus.DefaultReplicaSet.Status == innodb.ReplicaSetStatusNoQuorum {
 		glog.V(4).Info("Cluster as seen from this instance is in NO_QUORUM state")
-		metrics.IncEventCounter(clusterNoQuorumCount)
+		statusText := clusterStatus.DefaultReplicaSet.StatusText
+		if strings.Contains(statusText, "Cluster has no quorum as visible from") {
+			noMajorityInstanceNamePort := strings.Split(strings.Split(statusText, "from '")[1], "' and")[0]
+			msh := m.mysqlshFactory(m.Instance.GetShellURIByNamePort(noMajorityInstanceNamePort))
+			glog.Infof("[Sync] no majority instance detected=%s, shutting down...", noMajorityInstanceNamePort)
+			err = msh.ShutdownInstance(ctx)
+			if err != nil {
+				glog.Errorf("[Sync] Failed to shutdown %s", noMajorityInstanceNamePort)
+			}
+			return false
+		} else {
+			metrics.IncEventCounter(clusterNoQuorumCount)
+		}
 	}
 
 	online := false

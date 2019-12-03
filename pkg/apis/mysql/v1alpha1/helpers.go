@@ -72,6 +72,10 @@ func (c *Cluster) EnsureDefaults() *Cluster {
 		c.Spec.ImagePullPolicy = constants.DefaultImagePullPolicy
 	}
 
+	if c.Spec.PreCheckImage == "" {
+		c.Spec.PreCheckImage = constants.DefaultPreCheckImage
+	}
+
 	if c.Spec.BaseServerID == 0 {
 		c.Spec.BaseServerID = defaultBaseServerID
 	}

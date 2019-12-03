@@ -41,5 +41,6 @@ const ReplicationGroupName = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
 const DefaultLogLevel = 4
 
 const DefaultImagePullPolicy = "IfNotPresent"
+const DefaultPreCheckImage = "busybox"
 
 const DefaultTimeout = 120 * time.Second //todo increased to avoid signal kill error

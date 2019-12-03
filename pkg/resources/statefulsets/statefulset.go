@@ -154,6 +154,60 @@ func getReplicationGroupSeeds(name string, members int) string {
 	return strings.Join(seeds, ",")
 }
 
+func precheckContainer(cluster *v1alpha1.Cluster, members int) v1.Container {
+	cmd := fmt.Sprintf(`
+                replicas=%d
+                cluster_name=%s
+                is_parallel=%s
+
+                pod_name=$(cat /etc/hostname)
+                pod_ordinal=$(cat /etc/hostname | grep -o '[^-]*$')
+                seq_num=$(expr $pod_ordinal + 1)
+
+                max_ordinal=$(expr $replicas - 1)
+                # check if env is ready for mysql
+                # when all hosts pinging ok
+                while true
+                do
+                  env_ready=1
+
+                  if [ $is_parallel = "true" ]; then
+                    for i in $(seq 0 $max_ordinal)
+                    do
+                      ping -c 4 -w 20 $cluster_name-$i.$cluster_name
+                      if [ $? -ne 0 ]; then
+                        env_ready=0
+                        break
+                      fi
+                    done
+                  else
+                    ping -c 4 -w 20 $cluster_name-$pod_ordinal.$cluster_name
+                    if [ $? -ne 0 ]; then
+                      env_ready=0
+                    fi
+                  fi
+
+                  if [ $env_ready -eq 1 ]; then
+                    sleep_seconds=$(expr $seq_num \* 20)
+                    max_sleep_seconds=$(expr $replicas \* 20 + 3)
+                    sleep_seconds=$(expr $max_sleep_seconds - $sleep_seconds) # the first node sleep most
+                    echo "env is ready, waiting ${sleep_seconds} seconds..."
+                    sleep $sleep_seconds
+                    exit 0
+                  else
+                    echo "env is not ready, waiting 3 seconds..."
+                    sleep 3
+                  fi
+                done
+	`, members, cluster.Name, strconv.FormatBool(cluster.Spec.PodManagementPolicy == apps.ParallelPodManagement))
+	return v1.Container{
+        Name: "precheck",
+        Image: cluster.Spec.PreCheckImage,
+		ImagePullPolicy: cluster.Spec.ImagePullPolicy,
+		Command:      []string{"/bin/sh", "-cx", cmd},
+	}
+}
+
 // Builds the MySQL operator container for a cluster.
 // The 'mysqlImage' parameter is the image name of the mysql server to use with
 // no version information.. e.g. 'mysql/mysql-server'
@@ -371,6 +425,16 @@ func NewForCluster(cluster *v1alpha1.Cluster, images operatoropts.Images, servic
 		})
 	}
 
+	var initContainers []v1.Container
+	if cluster.Spec.InitContainers == nil ||
+		len(cluster.Spec.InitContainers) == 0 {
+		initContainers = []v1.Container{
+			precheckContainer(cluster, members),
+		}
+	} else {
+		initContainers = cluster.Spec.InitContainers
+	}
+
 	containers := []v1.Container{
 		mysqlServerContainer(cluster, images.MySQLServerImage, rootPassword, members, baseServerID),
 		mysqlAgentContainer(cluster, images.MySQLAgentImage, rootPassword, members)}
@@ -417,7 +481,7 @@ func NewForCluster(cluster *v1alpha1.Cluster, images operatoropts.Images, servic
 					ServiceAccountName: "mysql-agent",
 					NodeSelector:       cluster.Spec.NodeSelector,
 					Affinity:           cluster.Spec.Affinity,
-					InitContainers:     cluster.Spec.InitContainers,
+					InitContainers:     initContainers,
 					Containers:         containers,
 					Volumes:            podVolumes,
 				},

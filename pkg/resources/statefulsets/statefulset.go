@@ -230,7 +230,7 @@ func mysqlServerContainer(cluster *v1alpha1.Cluster, mysqlServerImage string, ro
 		"--log-error-verbosity=3",
 		fmt.Sprintf("--loose-group-replication-local-address=\"%[1]s-${index}.%[1]s:%[2]d\"", cluster.Name, replicationGroupPort),
 		"--loose-group-replication-group-seeds=\"${seeds}\"",
-		fmt.Sprintf("--group-replication-group-name=\"%[1]s\"", constants.ReplicationGroupName),
+		fmt.Sprintf("--loose-group-replication-group-name=\"%[1]s\"", constants.ReplicationGroupName),
 		"--loose-group-replication-start-on-boot=\"OFF\"",
 		"--loose-group-replication-bootstrap-group=\"OFF\"",
 		"--loose-group-replication-exit-state-action=\"READ_ONLY\"",

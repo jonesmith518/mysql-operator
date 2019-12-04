@@ -34,6 +34,7 @@ type ClusterSpec struct {
 	Members int32 `json:"members,omitempty"`
 	//
 	LogLevel int32 `json:"logLevel,omitempty"`
+	ExporterImage string `json:"exporterImage,omitempty"`
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 	PreCheckImage string `json:"preCheckImage,omitempty"`
 	// BaseServerID defines the base number used to create unique server_id

@@ -360,6 +360,29 @@ func mysqlAgentContainer(cluster *v1alpha1.Cluster, mysqlAgentImage string, root
 	}
 }
 
+func exporterContainer(cluster *v1alpha1.Cluster, rootPassword v1.EnvVar) v1.Container {
+	if cluster.Spec.ExporterImage == "" {
+		return v1.Container{}
+	} else {
+		return v1.Container{
+            Name: "exporter",
+            Image: cluster.Spec.ExporterImage,
+			Env: []v1.EnvVar{
+				rootPassword,
+				{
+					Name:  "DATA_SOURCE_NAME",
+					Value: "root:${MYSQL_ROOT_PASSWORD}@(127.0.0.1:3306)/",
+				},
+			},
+			Ports: []v1.ContainerPort{
+				{
+					ContainerPort: 9104,
+				},
+			},
+		}
+	}
+}
+
 // NewForCluster creates a new StatefulSet for the given Cluster.
 func NewForCluster(cluster *v1alpha1.Cluster, images operatoropts.Images, serviceName string) *apps.StatefulSet {
 	rootPassword := mysqlRootPassword(cluster)
@@ -438,6 +461,9 @@ func NewForCluster(cluster *v1alpha1.Cluster, images operatoropts.Images, servic
 	containers := []v1.Container{
 		mysqlServerContainer(cluster, images.MySQLServerImage, rootPassword, members, baseServerID),
 		mysqlAgentContainer(cluster, images.MySQLAgentImage, rootPassword, members)}
+	if cluster.Spec.ExporterImage != "" {
+		containers = append(containers, exporterContainer(cluster, rootPassword))
+	}
 
 	podLabels := map[string]string{
 		constants.ClusterLabel: cluster.Name,

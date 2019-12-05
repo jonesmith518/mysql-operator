@@ -20,7 +20,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
-	appsv1beta1 "k8s.io/api/apps/v1beta1"
+	appsv1beta1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
@@ -29,7 +29,7 @@ import (
 
 // UpdateStatefulSet performs a direct update for the specified StatefulSet.
 func UpdateStatefulSet(kubeClient kubernetes.Interface, newData *appsv1beta1.StatefulSet) (*appsv1beta1.StatefulSet, error) {
-	result, err := kubeClient.AppsV1beta1().StatefulSets(newData.Namespace).Update(newData)
+	result, err := kubeClient.AppsV1().StatefulSets(newData.Namespace).Update(newData)
 	if err != nil {
 		glog.Errorf("Failed to update StatefulSet: %v", err)
 		return nil, err
@@ -57,7 +57,7 @@ func PatchStatefulSet(kubeClient kubernetes.Interface, oldData *appsv1beta1.Stat
 	}
 	glog.V(4).Infof("Patching StatefulSet %q: %s", types.NamespacedName{Namespace: oldData.Namespace, Name: oldData.Name}, string(patchBytes))
 
-	result, err := kubeClient.AppsV1beta1().StatefulSets(oldData.Namespace).Patch(oldData.Name, types.StrategicMergePatchType, patchBytes)
+	result, err := kubeClient.AppsV1().StatefulSets(oldData.Namespace).Patch(oldData.Name, types.StrategicMergePatchType, patchBytes)
 	if err != nil {
 		glog.Errorf("Failed to patch StatefulSet: %v", err)
 		return nil, err

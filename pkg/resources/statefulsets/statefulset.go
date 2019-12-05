@@ -20,7 +20,7 @@ import (
 	"strconv"
 	"strings"
 
-	apps "k8s.io/api/apps/v1beta1"
+	apps "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -492,6 +492,9 @@ func NewForCluster(cluster *v1alpha1.Cluster, images operatoropts.Images, servic
 		Spec: apps.StatefulSetSpec{
 			PodManagementPolicy: cluster.Spec.PodManagementPolicy,
 			Replicas: &cluster.Spec.Members,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: podLabels,
+			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: podLabels,

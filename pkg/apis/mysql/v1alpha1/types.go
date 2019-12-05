@@ -15,7 +15,7 @@
 package v1alpha1
 
 import (
-	"k8s.io/api/apps/v1beta1"
+	"k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -29,7 +29,7 @@ type ClusterSpec struct {
 	// Version defines the MySQL Docker image version.
 	Version string `json:"version"`
 	//
-	PodManagementPolicy v1beta1.PodManagementPolicyType `json:"podManagementPolicy,omitempty"`
+	PodManagementPolicy v1.PodManagementPolicyType `json:"podManagementPolicy,omitempty"`
 	// Members defines the number of MySQL instances in a cluster
 	Members int32 `json:"members,omitempty"`
 	//

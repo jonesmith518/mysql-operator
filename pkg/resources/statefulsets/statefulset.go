@@ -90,6 +90,12 @@ func volumeMounts(cluster *v1alpha1.Cluster) []v1.VolumeMount {
 		})
 	}
 
+	// use the same time as host
+	mounts = append(mounts, v1.VolumeMount{
+		Name:      "localtime-config", // use the same pv as mysql server
+		MountPath: "/etc/localtime",
+	})
+
 	return mounts
 }
 
@@ -447,6 +453,15 @@ func NewForCluster(cluster *v1alpha1.Cluster, images operatoropts.Images, servic
 			},
 		})
 	}
+
+	podVolumes = append(podVolumes, v1.Volume{
+		Name: "localtime-config",
+		VolumeSource: v1.VolumeSource{
+			HostPath: &v1.HostPathVolumeSource{
+                Path: "/etc/localtime" ,
+			},
+		},
+	})
 
 	var initContainers []v1.Container
 	if cluster.Spec.InitContainers == nil ||

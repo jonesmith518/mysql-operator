@@ -168,9 +168,9 @@ func precheckContainer(cluster *v1alpha1.Cluster, members int) v1.Container {
 
                 pod_name=$(cat /etc/hostname)
                 pod_ordinal=$(cat /etc/hostname | grep -o '[^-]*$')
-                seq_num=$(expr $pod_ordinal + 1)
+                seq_num=$(($pod_ordinal + 1))
 
-                max_ordinal=$(expr $replicas - 1)
+                max_ordinal=$(($replicas - 1))
                 # check if env is ready for mysql
                 # when all hosts pinging ok
                 while true
@@ -194,9 +194,9 @@ func precheckContainer(cluster *v1alpha1.Cluster, members int) v1.Container {
                   fi
 
                   if [ $env_ready -eq 1 ]; then
-                    sleep_seconds=$(expr $seq_num \* 20)
-                    max_sleep_seconds=$(expr $replicas \* 20 + 3)
-                    sleep_seconds=$(expr $max_sleep_seconds - $sleep_seconds) # the first node sleep most
+                    sleep_seconds=$(($seq_num * 20))
+                    max_sleep_seconds=$(($replicas * 20 + 3))
+                    sleep_seconds=$(($max_sleep_seconds - $sleep_seconds)) # the first node sleep most
                     echo "env is ready, waiting ${sleep_seconds} seconds..."
                     sleep $sleep_seconds
                     exit 0
@@ -274,7 +274,7 @@ func mysqlServerContainer(cluster *v1alpha1.Cluster, mysqlServerImage string, ro
          members=%d
          cluster_name=%s
          repl_group_port=%d
-         max_index=$(expr $members - 1)
+         max_index=$(($members - 1))
          seeds=""
          for i in $(seq 0 $max_index)
          do

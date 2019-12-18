@@ -53,6 +53,7 @@ type Interface interface {
 	// RejoinInstanceToCluster rejoins an instance (specified by URI) to the
 	// InnoDB cluster.
 	RejoinInstanceToCluster(ctx context.Context, uri string, opts Options) error
+	RescanCluster(ctx context.Context, opts Options) error
 	// RemoveInstanceFromCluster removes an instance (specified by URI) to the
 	// InnoDB cluster.
 	RemoveInstanceFromCluster(ctx context.Context, uri string, opts Options) error
@@ -186,6 +187,12 @@ func (r *runner) AddInstanceToCluster(ctx context.Context, uri string, opts Opti
 
 func (r *runner) RejoinInstanceToCluster(ctx context.Context, uri string, opts Options) error {
 	python := fmt.Sprintf("dba.get_cluster('%s').rejoin_instance('%s', %s)", innodb.DefaultClusterName, uri, opts)
+	_, err := r.run(ctx, python)
+	return err
+}
+
+func (r *runner) RescanCluster(ctx context.Context, opts Options) error {
+	python := fmt.Sprintf("dba.get_cluster('%s').rescan(%s)", innodb.DefaultClusterName, opts)
 	_, err := r.run(ctx, python)
 	return err
 }

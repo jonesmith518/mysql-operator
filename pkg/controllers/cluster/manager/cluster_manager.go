@@ -278,43 +278,38 @@ func (m *ClusterManager) handleInstanceMissing(ctx context.Context, primaryAddr 
 	primaryURI := fmt.Sprintf("%s:%s@%s", m.Instance.GetUser(), m.Instance.GetPassword(), primaryAddr)
 	primarySh := m.mysqlshFactory(primaryURI)
 
-	// TODO: just call RejoinInstanceToCluster and handle the error.
-	instanceState, err := primarySh.CheckInstanceState(ctx, m.Instance.GetShellURI())
+	// just call RejoinInstanceToCluster and handle the error.
+	whitelistCIDR, err := m.Instance.WhitelistCIDR()
 	if err != nil {
-		glog.Errorf("Failed to determine if we can rejoin the cluster: %v", err)
+		glog.Errorf("Getting CIDR to whitelist for GR: %v", err)
+		return false
+	}
+	glog.V(4).Infof("Attempting to rejoin instance to cluster")
+	if err := primarySh.RejoinInstanceToCluster(ctx, m.Instance.GetShellURI(), mysqlsh.Options{
+		"ipWhitelist":   whitelistCIDR,
+		"memberSslMode": "DISABLED",
+	}); err != nil {
+		if strings.Contains(err.Error(), "Cannot rejoin instance") &&
+			strings.Contains(err.Error(), "since it is an active") &&
+			strings.Contains(err.Error(), "member of the ReplicaSet") {
+			glog.V(4).Info("Failed to rejoin cluster by existing 'active' member, rescanning...")
+			err = primarySh.RescanCluster(ctx, mysqlsh.Options{"removeInstances": "auto"})
+			if err != nil {
+				glog.Errorf("Failed to rescan cluster: %v", err)
+			}
+			return false
+		}
 		if strings.Contains(err.Error(), "metadata exists, but GR is not active") {
 			glog.Info("[handleInstanceMissing] GR not active, starting...")
 			msh := m.mysqlshFactory(m.Instance.GetShellURI())
 			err = msh.StartGroupReplication(ctx)
 			if err != nil {
 				glog.Errorf("[handleInstanceMissing] Failed to start GR: %v", err)
-				return false
 			}
-		} else {
 			return false
 		}
-	}
-	glog.V(4).Infof("Checking if instance can rejoin cluster")
-	if instanceState.CanRejoinCluster() {
-		whitelistCIDR, err := m.Instance.WhitelistCIDR()
-		if err != nil {
-			glog.Errorf("Getting CIDR to whitelist for GR: %v", err)
-			return false
-		}
-		glog.V(4).Infof("Attempting to rejoin instance to cluster")
-		if err := primarySh.RejoinInstanceToCluster(ctx, m.Instance.GetShellURI(), mysqlsh.Options{
-			"ipWhitelist":   whitelistCIDR,
-			"memberSslMode": "DISABLED",
-		}); err != nil {
-			glog.Errorf("Failed to rejoin cluster: %v", err)
-			return false
-		}
-	} else {
-		glog.V(4).Infof("Removing instance from cluster")
-		if err := primarySh.RemoveInstanceFromCluster(ctx, m.Instance.GetShellURI(), mysqlsh.Options{"force": "True"}); err != nil {
-			glog.Errorf("Failed to remove from cluster: %v", err)
-			return false
-		}
+		glog.Errorf("Failed to rejoin cluster: %v", err)
+		return false
 	}
 	return true
 }

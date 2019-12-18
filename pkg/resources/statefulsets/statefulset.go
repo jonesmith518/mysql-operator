@@ -180,7 +180,12 @@ func precheckContainer(cluster *v1alpha1.Cluster, members int) v1.Container {
                   if [ $is_parallel = "true" ]; then
                     for i in $(seq 0 $max_ordinal)
                     do
-                      ping -c 4 -w 20 $cluster_name-$i.$cluster_name
+                      # node 0 should always wait for other nodes' mysql service up
+                      if [ $pod_ordinal -eq 0 -a $i -ne 0 ]; then
+                        echo -e "\n" | telnet $cluster_name-$i.$cluster_name 3306 | grep Connected
+                      else
+                        ping -c 4 -w 20 $cluster_name-$i.$cluster_name
+                      fi
                       if [ $? -ne 0 ]; then
                         env_ready=0
                         break

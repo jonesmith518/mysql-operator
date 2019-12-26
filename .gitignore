@@ -49,3 +49,7 @@ test/e2e/manifests/e2e-mysql-operator-controller.yaml
 # Goland 
 .idea
 *.iml
+
+# vendor
+vendor
+.vendor-*
